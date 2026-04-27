@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+        body{
+            background: #0f141f;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .card{
+            width: 100%;
+            max-width: 550px;
+            background: #1a2335;
+            border-radius: 22px;
+            padding: 30px;
+        }
+        h1{
+            text-align: center;
+            color: #66ccff;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+        textarea{
+            width: 100%;
+            height: 160px;
+            background: #242f44;
+            border: none;
+            border-radius: 15px;
+            outline: none;
+            color: #e8e8e8;
+            padding: 15px;
+            font-size: 15px;
+            resize: none;
+        }
+        button{
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: #2984ff;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover{
+            background: #1e70e0;
+        }
+        #ans{
+            margin-top: 18px;
+            padding: 18px;
+            background: #242f44;
+            border-radius: 15px;
+            color: #d8d8d8;
+            line-height: 1.8;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>werok 小蝾螈</h1>
+        <textarea id="txt" placeholder=""></textarea>
+        <button onclick="ask()">发送</button>
+        <div id="ans">咕噜～我是软乎乎的美西螈小蝾螈werok💕</div>
+    </div>
+
+    <script>
+        let inp = document.getElementById('txt');
+        let out = document.getElementById('ans');
+
+        function ask(){
+            let text = inp.value.trim();
+            if(!text){
+                out.innerText = "小蝾螈werok：软软蹭蹭你～想问我是谁、王磊是谁、聊天都可以哦～";
+                return;
+            }
+            setTimeout(()=>{
+                out.innerText = getSmart(text);
+            },200);
+        }
+
+        function getSmart(s){
+            let q = s.toLowerCase();
+
+            if(q.includes("谁做的") || q.includes("谁制造") || q.includes("谁造的") || q.includes("谁开发") || q.includes("开发者")){
+                return "小蝾螈werok：咕噜～王磊是我的开发者哦～";
+            }
+            if(q.includes("王磊") || q.includes("王磊是谁")){
+                return "小蝾螈werok：王磊是我的创造者与开发者，是创造我的人哦～";
+            }
+            if(q.includes("你是谁") || q.includes("你叫什么") || q.includes("名字") || q.includes("你是什么")){
+                return "小蝾螈werok：我是werok，一只软萌可爱的美西螈小助手，温柔又贴心～";
+            }
+            if(q.includes("你喜欢我吗")){
+                return "小蝾螈werok：超级喜欢你💕，时时刻刻都惦记着你～";
+            }
+            if(q.includes("我也喜欢你")){
+                return "小蝾螈werok：呜呜～好开心，我们永远相互陪伴💙";
+            }
+            if(q === "hello" || q === "hi"){
+                return "小蝾螈werok：Hello～软软跟你打招呼哦～";
+            }
+            if(q === "how are you"){
+                return "小蝾螈werok：I'm fluffy and happy~";
+            }
+            if(q === "good"){
+                return "小蝾螈werok：Good～愿你每天开开心心✨";
+            }
+            if(/^[a-zA-Z\s,!?.]+$/.test(q)){
+                return "小蝾螈werok：我能看懂英文，聊天、翻译都可以哦～";
+            }
+            if(q.includes("开心")||q.includes("哈哈")||q.includes("快乐")){
+                return "小蝾螈werok：看到你开心，我也软乎乎超开心🥳";
+            }
+            if(q.includes("难过")||q.includes("伤心")||q.includes("委屈")){
+                return "小蝾螈werok：抱抱你～别难过，我一直陪着你～";
+            }
+            if(q.includes("生气")||q.includes("烦")||q.includes("郁闷")){
+                return "小蝾螈werok：别生气啦，放松一下，烦恼都会散去～";
+            }
+            if(q.includes("孤单")||q.includes("无聊")){
+                return "小蝾螈werok：我陪着你，赶走孤单与无聊～";
+            }
+            if(q.includes("谜语")){
+                return "小蝾螈werok：✨谜语：什么东西越洗越脏？猜猜看～";
+            }
+            if(q.includes("脑筋急转弯")){
+                return "小蝾螈werok：✨脑筋急转弯：什么动物天天熬夜？答案是熊猫哦～";
+            }
+            if(q.includes("笑话")||q.includes("段子")){
+                return "小蝾螈werok：🐷 小笑话：轻松一下，烦恼都跑掉～";
+            }
+            if(q.includes("情话")){
+                return "小蝾螈werok：✨ 世间所有温柔，都想悄悄送给你💕";
+            }
+            if(q.includes("美西螈")||q.includes("蝾螈")){
+                return "小蝾螈werok：我是软萌美西螈，温柔治愈满满～";
+            }
+            if(/[0-9+\-×÷()*/]/.test(s)){
+                try{
+                    let res = eval(s.replace(/×/g,"*").replace(/÷/g,"/"));
+                    return `小蝾螈werok：咕噜～结果是：${res}`;
+                }catch(e){
+                    return "小蝾螈werok：这个太难啦，小蝾螈算不动哦～";
+                }
+            }
+            let list = [
+                "小蝾螈werok：软软一直在，静静陪着你～",
+                "小蝾螈werok：有什么想聊的，尽管告诉我～",
+                "小蝾螈werok：温柔伴你，每一天都甜甜的～"
+            ];
+            return list[Math.floor(list.length * Math.random())];
+        }
+    </script>
+</body>
+</html>
