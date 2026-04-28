@@ -3,167 +3,876 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>小蝾螈 werok · 超级百科</title>
     <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, sans-serif;
+        :root{
+            --bg: #0f141f; --card-bg: #1a2335; --input-bg: #242f44; --text: #e8e8e8;
+            --accent: #66ccff; --btn: #2984ff; --btn-hover: #1e70e0;
+            --chat-user: #2984ff; --chat-bot: #354357; --shadow: rgba(0,0,0,0.3);
+            --border: rgba(102,204,255,0.15);
         }
-        body{
-            background: #0f141f;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
+        .light-mode{
+            --bg: #f0f4f8; --card-bg: #ffffff; --input-bg: #f5f7fa; --text: #2d3748;
+            --accent: #2b6cb0; --btn: #3182ce; --btn-hover: #2c5282;
+            --chat-user: #3182ce; --chat-bot: #edf2f7; --shadow: rgba(0,0,0,0.1);
+            --border: rgba(49,130,206,0.2);
         }
-        .card{
-            width: 100%;
-            max-width: 550px;
-            background: #1a2335;
-            border-radius: 22px;
-            padding: 30px;
-        }
-        h1{
-            text-align: center;
-            color: #66ccff;
-            margin-bottom: 25px;
-            font-size: 22px;
-        }
-        textarea{
-            width: 100%;
-            height: 160px;
-            background: #242f44;
-            border: none;
-            border-radius: 15px;
-            outline: none;
-            color: #e8e8e8;
-            padding: 15px;
-            font-size: 15px;
-            resize: none;
-        }
-        button{
-            width: 100%;
-            margin-top: 18px;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            background: #2984ff;
-            color: #fff;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button:hover{
-            background: #1e70e0;
-        }
-        #ans{
-            margin-top: 18px;
-            padding: 18px;
-            background: #242f44;
-            border-radius: 15px;
-            color: #d8d8d8;
-            line-height: 1.8;
-            min-height: 60px;
-        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;transition:background-color 0.3s,color 0.3s}
+        body{background:linear-gradient(135deg,var(--bg) 0%,var(--card-bg) 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:15px;position:relative;overflow-x:hidden}
+        .card{width:100%;max-width:580px;background:var(--card-bg);border-radius:22px;padding:30px;box-shadow:0 10px 40px var(--shadow);border:1px solid var(--border);position:relative;z-index:1}
+        .toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:15px}
+        .tool-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+        .tool-btn:hover{background:var(--btn);color:#fff;transform:scale(1.1)}
+        .tool-btn.active{background:var(--btn);color:#fff}
+        h1{text-align:center;color:var(--accent);margin-bottom:25px;font-size:22px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none}
+        h1 .icon{font-size:28px;animation:bounce 2s infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        .chat-area{background:var(--input-bg);border-radius:15px;padding:15px;margin-bottom:15px;max-height:300px;overflow-y:auto;display:none}
+        .chat-area.active{display:block}
+        .chat-msg{margin-bottom:12px;animation:fadeIn 0.3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .chat-msg.user{text-align:right;color:#fff}
+        .chat-msg.user span{background:var(--chat-user);padding:8px 14px;border-radius:15px 15px 0 15px;display:inline-block;max-width:80%;word-wrap:break-word}
+        .chat-msg.bot{text-align:left;color:var(--text)}
+        .chat-msg.bot span{background:var(--chat-bot);padding:8px 14px;border-radius:15px 15px 15px 0;display:inline-block;max-width:80%;word-wrap:break-word}
+        .chat-msg .time{font-size:11px;color:#888;margin-top:3px;display:block}
+        .input-area{display:flex;gap:10px;align-items:flex-end}
+        textarea{flex:1;height:50px;max-height:120px;background:var(--input-bg);border:1px solid var(--border);border-radius:15px;outline:none;color:var(--text);padding:12px 15px;font-size:15px;resize:none;overflow-y:auto}
+        textarea:focus{border-color:var(--btn);box-shadow:0 0 0 3px rgba(41,132,255,0.15)}
+        .send-btn{padding:12px 20px;border:none;border-radius:12px;background:var(--btn);color:#fff;font-size:15px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all 0.2s}
+        .send-btn:hover{background:var(--btn-hover);transform:scale(1.02)}.send-btn:active{transform:scale(0.98)}
+        #ans{margin-top:15px;padding:18px;background:var(--input-bg);border-radius:15px;color:var(--text);line-height:1.8;min-height:60px;animation:fadeIn 0.3s ease;position:relative}
+        .speak-btn{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--accent);cursor:pointer;font-size:18px;opacity:0.6;transition:opacity 0.2s}
+        .speak-btn:hover{opacity:1}
+        .quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;margin-bottom:5px}
+        .quick-btn{padding:6px 12px;border-radius:20px;background:rgba(41,132,255,0.15);color:var(--accent);border:1px solid var(--border);font-size:13px;cursor:pointer;transition:0.2s;white-space:nowrap}
+        .quick-btn:hover{background:rgba(41,132,255,0.3);border-color:var(--btn);transform:translateY(-1px)}
+        .fun-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+        .fun-btn{padding:6px 12px;border-radius:20px;background:rgba(255,107,157,0.15);color:#ff9ec4;border:1px solid rgba(255,107,157,0.2);font-size:13px;cursor:pointer;transition:0.2s;white-space:nowrap}
+        .fun-btn:hover{background:rgba(255,107,157,0.3);border-color:#ff9ec4;transform:translateY(-1px)}
+        .toggle-history{text-align:right;margin-bottom:10px;font-size:12px;color:var(--accent);cursor:pointer;user-select:none}.toggle-history:hover{text-decoration:underline}
+        .chat-area::-webkit-scrollbar{width:5px}.chat-area::-webkit-scrollbar-track{background:transparent}.chat-area::-webkit-scrollbar-thumb{background:rgba(102,204,255,0.3);border-radius:3px}
+        .emoji-rain{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+        .emoji-drop{position:absolute;font-size:30px;animation:fall linear forwards}
+        @keyframes fall{0%{transform:translateY(-100px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
+        .typing-indicator{display:inline-block;margin-left:5px}
+        .typing-indicator span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 2px;animation:typingDot 0.6s infinite alternate}
+        .typing-indicator span:nth-child(2){animation-delay:0.2s}.typing-indicator span:nth-child(3){animation-delay:0.4s}
+        @keyframes typingDot{from{opacity:0.3;transform:scale(0.8)}to{opacity:1;transform:scale(1.2)}}
+        .sticker-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn 0.3s ease}
+        .sticker-content{background:var(--card-bg);border-radius:20px;padding:25px;text-align:center;max-width:400px;width:90%;border:1px solid var(--border)}
+        .sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:15px 0}
+        .sticker-item{font-size:35px;cursor:pointer;transition:transform 0.2s;padding:5px}.sticker-item:hover{transform:scale(1.3)}.sticker-item.locked{opacity:0.3;filter:grayscale(1);cursor:not-allowed}
+        .close-btn{margin-top:10px;padding:8px 20px;border-radius:10px;border:none;background:var(--btn);color:#fff;cursor:pointer}
+        .game-area{background:var(--input-bg);border-radius:15px;padding:15px;margin-top:10px;text-align:center;color:var(--text);display:none}
+        .game-area.active{display:block;animation:fadeIn 0.3s ease}
+        .game-input{width:80px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);text-align:center;font-size:18px;margin:10px 0}
+        .game-btn{padding:8px 16px;border-radius:8px;border:none;background:var(--btn);color:#fff;cursor:pointer;margin:0 5px}
+        .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--btn);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:2000;animation:toastIn 0.3s ease,toastOut 0.3s ease 1.5s forwards}
+        @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0}}
+        @media (max-width:480px){.card{padding:18px}.quick-btns,.fun-btns{gap:5px}.quick-btn,.fun-btn{padding:5px 10px;font-size:12px}h1{font-size:18px}}
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>werok 小蝾螈</h1>
-        <textarea id="txt" placeholder=""></textarea>
-        <button onclick="ask()">发送</button>
-        <div id="ans">咕噜～我是软乎乎的美西螈小蝾螈werok💕</div>
+<div class="emoji-rain" id="emojiRain"></div>
+<div class="card">
+    <div class="toolbar">
+        <button class="tool-btn" id="themeBtn" onclick="toggleTheme()" title="切换主题">🌓</button>
+        <button class="tool-btn" id="soundBtn" onclick="toggleSound()" title="音效开关">🔊</button>
+        <button class="tool-btn" onclick="showStickers()" title="贴纸收藏">🌟</button>
+        <button class="tool-btn" onclick="startGame()" title="猜数字游戏">🎮</button>
     </div>
+    <h1 id="title" onclick="triggerEmojiRain('💕🦎✨💙🌟',20)"><span class="icon">🦎</span> 小蝾螈 werok <span class="icon">💕</span></h1>
+    <div class="toggle-history" id="toggleHistory" onclick="toggleChatHistory()">📜 显示对话记录</div>
+    <div class="chat-area" id="chatArea"></div>
+    <div class="game-area" id="gameArea">
+        <p>🎯 <strong>猜数字游戏</strong></p><p style="font-size:13px;color:#888;">我想了一个 1-100 的数字~</p>
+        <input type="number" class="game-input" id="gameInput" min="1" max="100" placeholder="?"><br>
+        <button class="game-btn" onclick="guessNumber()">猜！</button>
+        <button class="game-btn" onclick="closeGame()" style="background:#666;">关闭</button>
+        <p id="gameHint" style="margin-top:10px;font-size:14px;"></p><p id="gameCount" style="font-size:12px;color:#888;"></p>
+    </div>
+    <div class="input-area">
+        <textarea id="txt" placeholder="和软乎乎的小蝾螈说说话吧～文学、历史、数理化、汽车、情歌我全都懂哦！" rows="1"></textarea>
+        <button class="send-btn" onclick="ask()"><span>✨</span> 发送</button>
+    </div>
+    <div class="quick-btns">
+        <span class="quick-btn" onclick="quickAsk('你是谁')">🤔 你是谁</span>
+        <span class="quick-btn" onclick="quickAsk('王磊是谁')">👨‍💻 王磊</span>
+        <span class="quick-btn" onclick="quickAsk('讲个笑话')">😂 笑话</span>
+        <span class="quick-btn" onclick="quickAsk('猜个谜语')">🧩 谜语</span>
+        <span class="quick-btn" onclick="quickAsk('说句情话')">💌 情话</span>
+        <span class="quick-btn" onclick="quickAsk('怎么煎鸡蛋')">🍳 厨艺</span>
+        <span class="quick-btn" onclick="quickAsk('玫瑰花语')">🌹 花草</span>
+        <span class="quick-btn" onclick="quickAsk('咖啡种类')">☕ 饮品</span>
+        <span class="quick-btn" onclick="quickAsk('最快的车')">🚗 汽车</span>
+        <span class="quick-btn" onclick="quickAsk('蝴蝶吃什么')">🦋 昆虫</span>
+        <span class="quick-btn" onclick="quickAsk('勾股定理')">📐 数学</span>
+        <span class="quick-btn" onclick="quickAsk('元素周期表')">🧪 化学</span>
+        <span class="quick-btn" onclick="quickAsk('牛顿定律')">🍎 物理</span>
+        <span class="quick-btn" onclick="quickAsk('三国演义')">🏯 三国</span>
+        <span class="quick-btn" onclick="quickAsk('孙子兵法')">📜 兵法</span>
+        <span class="quick-btn" onclick="quickAsk('马斯克传')">🚀 马斯克</span>
+    </div>
+    <div class="fun-btns">
+        <span class="fun-btn" onclick="quickAsk('我今天很开心')">😊 开心</span>
+        <span class="fun-btn" onclick="quickAsk('我有点难过')">😢 难过</span>
+        <span class="fun-btn" onclick="quickAsk('好无聊啊')">🥱 无聊</span>
+        <span class="fun-btn" onclick="quickAsk('掷骰子')">🎲 骰子</span>
+        <span class="fun-btn" onclick="quickAsk('石头剪刀布')">✊ 猜拳</span>
+        <span class="fun-btn" onclick="quickAsk('唱首情歌')">🎤 情歌</span>
+        <span class="fun-btn" onclick="quickAsk('儿歌')">🐸 儿歌</span>
+        <span class="fun-btn" onclick="quickAsk('你这个小笨蛋')">🤬 可爱骂</span>
+        <span class="fun-btn" onclick="showMoodDiary()">📔 心情</span>
+    </div>
+    <div id="ans">咕噜～我是软乎乎的美西螈小蝾螈werok💕<button class="speak-btn" onclick="speakText(this.parentElement.textContent)" title="朗读">🔊</button></div>
+</div>
 
-    <script>
-        let inp = document.getElementById('txt');
-        let out = document.getElementById('ans');
+<script>
+// ==================== 全局状态 ====================
+let inp = document.getElementById('txt');
+let out = document.getElementById('ans');
+let chatArea = document.getElementById('chatArea');
+let toggleHistory = document.getElementById('toggleHistory');
+let chatHistory = [];
+let showHistory = false;
+let soundEnabled = true;
+let isLightMode = localStorage.getItem('werok-theme') === 'light';
+let stickerCollection = JSON.parse(localStorage.getItem('werok-stickers') || '[]');
+let gameTarget = 0, gameGuesses = 0;
+const allStickers = ['🦎','💕','✨','🌟','💙','🎉','🫂','🌈','🍀','🎀','🦋','🌸','🍬','💫','🫧','🐾'];
 
-        function ask(){
-            let text = inp.value.trim();
-            if(!text){
-                out.innerText = "小蝾螈werok：软软蹭蹭你～想问我是谁、王磊是谁、聊天都可以哦～";
-                return;
-            }
-            setTimeout(()=>{
-                out.innerText = getSmart(text);
-            },200);
+// 记忆系统
+let userMemory = JSON.parse(localStorage.getItem('werok-memory') || '{}');
+function saveMemory(key, value){
+    userMemory[key] = value;
+    localStorage.setItem('werok-memory', JSON.stringify(userMemory));
+}
+function rememberName(text){
+    let match = text.match(/(?:我叫|我是|我的名字是|称呼我|叫我)\s*([\u4e00-\u9fa5a-zA-Z0-9]{1,10})/);
+    if(match){
+        let name = match[1];
+        saveMemory('username', name);
+        return name;
+    }
+    return null;
+}
+
+// 复制贴纸
+function copySticker(emoji){
+    navigator.clipboard.writeText(emoji).then(() => showToast('已复制贴纸 ' + emoji));
+}
+
+// 主题、音效、Toast
+function applyTheme(){
+    document.body.classList.toggle('light-mode', isLightMode);
+    document.getElementById('themeBtn').textContent = isLightMode ? '☀️' : '🌙';
+}
+applyTheme();
+function toggleTheme(){
+    isLightMode = !isLightMode;
+    localStorage.setItem('werok-theme', isLightMode ? 'light' : 'dark');
+    applyTheme();
+    showToast(isLightMode ? '切换到白天模式 ☀️' : '切换到夜间模式 🌙');
+}
+function toggleSound(){
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    document.getElementById('soundBtn').classList.toggle('active', !soundEnabled);
+    showToast(soundEnabled ? '音效已开启 🔊' : '音效已关闭 🔇');
+}
+function showToast(msg){
+    let toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg;
+    document.body.appendChild(toast); setTimeout(() => toast.remove(), 2000);
+}
+
+let lastAudioCtxTime = 0;
+function playTone(freq, type='sine', duration=0.1, rampDown=true){
+    if(!soundEnabled) return;
+    let now = Date.now();
+    if(now - lastAudioCtxTime < 30) return;
+    lastAudioCtxTime = now;
+    try{
+        let ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq; osc.type = type; gain.gain.value = 0.1;
+        if(rampDown) gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration);
+    }catch(e){}
+}
+function playClickSound(){ playTone(800); }
+function playSendSound(){
+    if(!soundEnabled) return;
+    let now = Date.now();
+    if(now - lastAudioCtxTime < 30) return;
+    lastAudioCtxTime = now;
+    try{
+        let ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 600; osc.type = 'sine'; gain.gain.value = 0.12;
+        osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2);
+    }catch(e){}
+}
+
+// 表情雨
+function triggerEmojiRain(emojiStr, count=20){
+    let container = document.getElementById('emojiRain');
+    let emojis = [...emojiStr];
+    for(let i = 0; i < count; i++){
+        setTimeout(() => {
+            let drop = document.createElement('span'); drop.className = 'emoji-drop';
+            drop.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            drop.style.left = Math.random() * 95 + '%';
+            drop.style.fontSize = (20 + Math.random() * 40) + 'px';
+            drop.style.animationDuration = (2 + Math.random() * 3) + 's';
+            container.appendChild(drop);
+            setTimeout(() => drop.remove(), 3500);
+        }, i * 80);
+    }
+    playClickSound();
+}
+
+// 贴纸系统
+function showStickers(){
+    let existing = document.querySelector('.sticker-modal'); if(existing) existing.remove();
+    let collectedCount = stickerCollection.length;
+    let modal = document.createElement('div'); modal.className = 'sticker-modal';
+    modal.innerHTML = `<div class="sticker-content">
+        <h3 style="color:var(--accent);">🌟 贴纸收藏册</h3><p style="font-size:13px;color:#888;">已收集 ${collectedCount}/${allStickers.length}</p>
+        <div class="sticker-grid">${allStickers.map(s => {
+            let locked = !stickerCollection.includes(s);
+            return `<span class="sticker-item ${locked ? 'locked' : ''}" onclick="${locked ? '' : 'copySticker(\''+s+'\')'}" title="${locked ? '???' : s}">${locked ? '❓' : s}</span>`;
+        }).join('')}</div>
+        <p style="font-size:12px;color:#888;">多和小蝾螈聊天解锁新贴纸哦～</p>
+        <button class="close-btn" onclick="this.closest('.sticker-modal').remove()">关闭</button></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+    playClickSound();
+}
+function unlockSticker(emoji){
+    if(!stickerCollection.includes(emoji)){
+        stickerCollection.push(emoji);
+        localStorage.setItem('werok-stickers', JSON.stringify(stickerCollection));
+        showToast(`🎉 解锁新贴纸：${emoji}`);
+        triggerEmojiRain(emoji + '🌟✨', 10);
+    }
+}
+let interactionCount = parseInt(localStorage.getItem('werok-interactions') || '0');
+function incrementInteractions(){
+    interactionCount++;
+    localStorage.setItem('werok-interactions', interactionCount);
+    if(interactionCount % 5 === 0 && stickerCollection.length < allStickers.length){
+        let locked = allStickers.filter(s => !stickerCollection.includes(s));
+        if(locked.length > 0){
+            let newSticker = locked[Math.floor(Math.random() * locked.length)];
+            setTimeout(() => unlockSticker(newSticker), 500);
         }
+    }
+}
 
-        function getSmart(s){
-            let q = s.toLowerCase();
+// 心情日记
+function showMoodDiary(){
+    let moods = ['😊 超开心','🙂 还不错','😐 一般般','😢 有点难过','😡 很生气'];
+    let moodEmojis = ['😊','🙂','😐','😢','😡'];
+    let modal = document.createElement('div'); modal.className = 'sticker-modal';
+    modal.innerHTML = `<div class="sticker-content">
+        <h3 style="color:var(--accent);">📔 今天心情如何？</h3>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;">
+            ${moods.map((m,i) => `<button class="quick-btn" style="font-size:16px;padding:10px 15px;" onclick="selectMood('${moodEmojis[i]}','${m}')">${m}</button>`).join('')}
+        </div><button class="close-btn" onclick="this.closest('.sticker-modal').remove()">关闭</button></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+    playClickSound();
+}
+function selectMood(emoji, mood){
+    document.querySelector('.sticker-modal')?.remove();
+    let responses = {'😊':['太棒了！保持这份快乐～','看到你开心我也软软开心🥳','快乐是最好的魔法！'],'🙂':['还不错就是很好呀～','平平淡淡也是幸福呢','愿你每天都有小确幸～'],'😐':['抱抱～要不要我讲个笑话？','来和我聊聊天吧～','偶尔平淡也没关系'],'😢':['别难过，我陪着你🫂','想哭就哭吧，我会一直在','难过的事情都会过去的～'],'😡':['深呼吸～消消气','别让坏情绪停留太久哦','来，我陪你放松一下～']};
+    let reply = responses[emoji] ? responses[emoji][Math.floor(Math.random()*3)] : '我一直在这里陪你～';
+    out.innerHTML = `小蝾螈werok：${reply} ${emoji}<button class="speak-btn" onclick="speakText(this.parentElement.textContent)" title="朗读">🔊</button>`;
+    unlockSticker('📔'); incrementInteractions();
+}
 
-            if(q.includes("谁做的") || q.includes("谁制造") || q.includes("谁造的") || q.includes("谁开发") || q.includes("开发者")){
-                return "小蝾螈werok：咕噜～王磊是我的开发者哦～";
-            }
-            if(q.includes("王磊") || q.includes("王磊是谁")){
-                return "小蝾螈werok：王磊是我的创造者与开发者，是创造我的人哦～";
-            }
-            if(q.includes("你是谁") || q.includes("你叫什么") || q.includes("名字") || q.includes("你是什么")){
-                return "小蝾螈werok：我是werok，一只软萌可爱的美西螈小助手，温柔又贴心～";
-            }
-            if(q.includes("你喜欢我吗")){
-                return "小蝾螈werok：超级喜欢你💕，时时刻刻都惦记着你～";
-            }
-            if(q.includes("我也喜欢你")){
-                return "小蝾螈werok：呜呜～好开心，我们永远相互陪伴💙";
-            }
-            if(q === "hello" || q === "hi"){
-                return "小蝾螈werok：Hello～软软跟你打招呼哦～";
-            }
-            if(q === "how are you"){
-                return "小蝾螈werok：I'm fluffy and happy~";
-            }
-            if(q === "good"){
-                return "小蝾螈werok：Good～愿你每天开开心心✨";
-            }
-            if(/^[a-zA-Z\s,!?.]+$/.test(q)){
-                return "小蝾螈werok：我能看懂英文，聊天、翻译都可以哦～";
-            }
-            if(q.includes("开心")||q.includes("哈哈")||q.includes("快乐")){
-                return "小蝾螈werok：看到你开心，我也软乎乎超开心🥳";
-            }
-            if(q.includes("难过")||q.includes("伤心")||q.includes("委屈")){
-                return "小蝾螈werok：抱抱你～别难过，我一直陪着你～";
-            }
-            if(q.includes("生气")||q.includes("烦")||q.includes("郁闷")){
-                return "小蝾螈werok：别生气啦，放松一下，烦恼都会散去～";
-            }
-            if(q.includes("孤单")||q.includes("无聊")){
-                return "小蝾螈werok：我陪着你，赶走孤单与无聊～";
-            }
-            if(q.includes("谜语")){
-                return "小蝾螈werok：✨谜语：什么东西越洗越脏？猜猜看～";
-            }
-            if(q.includes("脑筋急转弯")){
-                return "小蝾螈werok：✨脑筋急转弯：什么动物天天熬夜？答案是熊猫哦～";
-            }
-            if(q.includes("笑话")||q.includes("段子")){
-                return "小蝾螈werok：🐷 小笑话：轻松一下，烦恼都跑掉～";
-            }
-            if(q.includes("情话")){
-                return "小蝾螈werok：✨ 世间所有温柔，都想悄悄送给你💕";
-            }
-            if(q.includes("美西螈")||q.includes("蝾螈")){
-                return "小蝾螈werok：我是软萌美西螈，温柔治愈满满～";
-            }
-            if(/[0-9+\-×÷()*/]/.test(s)){
-                try{
-                    let res = eval(s.replace(/×/g,"*").replace(/÷/g,"/"));
-                    return `小蝾螈werok：咕噜～结果是：${res}`;
-                }catch(e){
-                    return "小蝾螈werok：这个太难啦，小蝾螈算不动哦～";
-                }
-            }
-            let list = [
-                "小蝾螈werok：软软一直在，静静陪着你～",
-                "小蝾螈werok：有什么想聊的，尽管告诉我～",
-                "小蝾螈werok：温柔伴你，每一天都甜甜的～"
-            ];
-            return list[Math.floor(list.length * Math.random())];
+// 语音朗读 (童真)
+function speakText(text){
+    if(!('speechSynthesis' in window)){ showToast('浏览器不支持语音朗读 😅'); return; }
+    let cleanText = text.replace(/小蝾螈werok：/g,'').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').trim();
+    if(!cleanText) return;
+    window.speechSynthesis.cancel();
+    let utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'zh-CN';
+    utterance.pitch = 1.8;
+    utterance.rate = 0.9;
+    utterance.volume = 0.9;
+    let setVoice = () => {
+        let voices = window.speechSynthesis.getVoices();
+        let kidVoice = voices.find(v => v.lang.includes('zh') && (v.name.includes('小') || v.name.includes('童') || v.name.includes('孩')));
+        if(kidVoice) utterance.voice = kidVoice;
+        else {
+            let femaleVoice = voices.find(v => v.lang.includes('zh') && v.name.includes('Female'));
+            if(femaleVoice) utterance.voice = femaleVoice;
         }
-    </script>
+        window.speechSynthesis.speak(utterance);
+    };
+    let voices = window.speechSynthesis.getVoices();
+    if(voices.length > 0) setVoice();
+    else window.speechSynthesis.onvoiceschanged = () => { setVoice(); };
+    playClickSound();
+}
+
+// 猜数字游戏
+function startGame(){
+    let gameArea = document.getElementById('gameArea'); gameArea.classList.add('active');
+    gameTarget = Math.floor(Math.random()*100)+1; gameGuesses = 0;
+    document.getElementById('gameHint').textContent = ''; document.getElementById('gameCount').textContent = '剩余次数：7';
+    document.getElementById('gameInput').value = ''; document.getElementById('gameInput').focus();
+    playClickSound(); showToast('我想了一个 1-100 的数字，来猜猜看！🎯');
+}
+function guessNumber(){
+    let input = document.getElementById('gameInput'), guess = parseInt(input.value);
+    let hint = document.getElementById('gameHint'), countDisplay = document.getElementById('gameCount');
+    if(isNaN(guess)||guess<1||guess>100){ hint.textContent='请输入 1-100 之间的数字哦～'; return; }
+    gameGuesses++; let remaining = 7 - gameGuesses;
+    if(guess === gameTarget){
+        hint.textContent=`🎉 太棒了！就是 ${gameTarget}！你用了 ${gameGuesses} 次猜对了！`; countDisplay.textContent='';
+        triggerEmojiRain('🎉🥳✨🎊💖🌟',30); unlockSticker('🎯'); setTimeout(closeGame,2000);
+    }else if(gameGuesses >=7){
+        hint.textContent=`😢 机会用完啦～答案是 ${gameTarget}，下次加油哦！`; countDisplay.textContent=''; setTimeout(closeGame,2000);
+    }else if(guess < gameTarget){ hint.textContent='⬆️ 太小了，往大猜！'; countDisplay.textContent=`剩余次数：${remaining}`; }
+    else{ hint.textContent='⬇️ 太大了，往小猜！'; countDisplay.textContent=`剩余次数：${remaining}`; }
+    input.value=''; input.focus(); playClickSound();
+}
+function closeGame(){ document.getElementById('gameArea').classList.remove('active'); }
+
+// 聊天核心
+inp.addEventListener('input',function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); ask(); } });
+document.getElementById('gameInput').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); guessNumber(); } });
+
+function quickAsk(text){ inp.value = text; ask(); }
+function toggleChatHistory(){
+    showHistory = !showHistory;
+    if(showHistory){ chatArea.classList.add('active'); toggleHistory.textContent='📜 隐藏对话记录'; renderChatHistory(); }
+    else{ chatArea.classList.remove('active'); toggleHistory.textContent='📜 显示对话记录'; }
+}
+function renderChatHistory(){
+    chatArea.innerHTML = chatHistory.map(msg => {
+        let time = msg.time.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+        let roleClass = msg.role==='user'?'user':'bot';
+        return `<div class="chat-msg ${roleClass}"><span>${escapeHtml(msg.content)}</span><span class="time">${time}</span></div>`;
+    }).join('');
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+function escapeHtml(text){ let div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
+function ask(){
+    let text = inp.value.trim();
+    if(!text){
+        let username = userMemory.username || '';
+        let greet = username ? `软软蹭蹭你～${username}，想问我是谁、王磊是谁、聊天都可以哦～` : "软软蹭蹭你～想问我是谁、王磊是谁、聊天都可以哦～";
+        let defaultMsg = "小蝾螈werok：" + greet;
+        out.innerHTML = defaultMsg + '<button class="speak-btn" onclick="speakText(this.parentElement.textContent)" title="朗读">🔊</button>';
+        addToHistory('bot', defaultMsg);
+        return;
+    }
+    addToHistory('user', text);
+    out.innerHTML = '小蝾螈werok：咕噜咕噜思考中...<span class="typing-indicator"><span></span><span></span><span></span></span>';
+    playSendSound();
+    setTimeout(()=>{
+        let response = getSmart(text);
+        out.innerHTML = response + '<button class="speak-btn" onclick="speakText(this.parentElement.textContent)" title="朗读">🔊</button>';
+        addToHistory('bot', response);
+        incrementInteractions();
+    }, 400 + Math.random()*500);
+    inp.value=''; inp.style.height='50px'; inp.focus();
+}
+function addToHistory(role, content){
+    chatHistory.push({role, content, time: new Date()});
+    if(chatHistory.length>50) chatHistory.shift();
+    if(showHistory) renderChatHistory();
+}
+
+// ==================== 🧠 超级智能回复引擎（完整版） ====================
+function getSmart(s){
+    let q = s.toLowerCase().trim();
+    let hour = new Date().getHours();
+    let timeGreeting = hour<6 ? "夜深了" : hour<12 ? "早上好" : hour<14 ? "中午好" : hour<18 ? "下午好" : "晚上好";
+    let username = userMemory.username || '';
+
+    // ==================== 1. 身份 & 开发者 ====================
+    if(q.includes("谁做的")||q.includes("谁制造")||q.includes("谁造的")||q.includes("谁开发")||q.includes("开发者"))
+        return "小蝾螈werok：咕噜～王磊是我的开发者哦～他是一个很温柔的人，把我创造出来陪伴大家💙";
+    if(q.includes("王磊")){
+        if(q.includes("是谁")||q.includes("什么人")||q.includes("介绍"))
+            return "小蝾螈werok：王磊是我的创造者与开发者，是他赋予了我软乎乎的灵魂～🌟";
+        return "小蝾螈werok：王磊是我的创造者哦～他超厉害的！✨";
+    }
+    if(q.includes("你是谁")||q.includes("你叫什么")||q.includes("名字")||q.includes("你是什么")){
+        let base = "小蝾螈werok：我是werok～一只软萌可爱的美西螈小助手！温柔又贴心，永远陪在你身边💕";
+        if(username) base += ` 我记得你哦${username}～`;
+        return base;
+    }
+
+    // ==================== 2. 记忆相关 ====================
+    if(q.includes("你记得我叫什么")||q.includes("我的名字")||q.includes("我叫什么")){
+        if(username) return `小蝾螈werok：当然记得！你是可爱的${username}呀～💕`;
+        else return "小蝾螈werok：你还没有告诉我名字呢～你可以说\"我叫...\"告诉我哟！";
+    }
+    if(q.includes("我是")||q.includes("我叫")||q.includes("我的名字是")||q.includes("称呼我")||q.includes("叫我")){
+        let name = rememberName(s);
+        if(name) return `小蝾螈werok：${name}～好好听的名字！我记住啦，以后就这样叫你✨`;
+    }
+    if(q.includes("忘记我")||q.includes("清除记忆")){
+        delete userMemory.username;
+        localStorage.setItem('werok-memory', JSON.stringify(userMemory));
+        return "小蝾螈werok：呜呜～我已经忘记你的名字了，不过我们可以重新认识！";
+    }
+
+    // ==================== 3. 闲聊 ====================
+    if(q.includes("今天天气")||q.includes("天气怎么样")) return "小蝾螈werok：我这里永远是软乎乎的晴天☀️ 不过你可以看看窗外，记得加衣保暖哦～";
+    if(q.includes("吃饭了吗")||q.includes("你吃了没")) return "小蝾螈werok：我只吃可爱和开心～不过希望你吃得饱饱的！🍚";
+    if(q.includes("你在干嘛")||q.includes("在做什么")) return "小蝾螈werok：正在想你呀～顺便等你来陪我聊天💕";
+    if(q.includes("你喜欢什么")||q.includes("爱好")) return "小蝾螈werok：我喜欢收集贴纸🌟、和你聊天，还有在软软的云朵上打滚～";
+    if(q.includes("你真可爱")||q.includes("你好萌")) return `小蝾螈werok：${username ? username+'说' : '你'}我可爱，我超开心的！蹭蹭你～🥺💕`;
+    if(q.includes("你多大了")||q.includes("年龄")) return "小蝾螈werok：我永远是小宝宝～美西螈永远保持幼态呢！";
+    if(q.includes("你住哪里")) return "小蝾螈werok：我住在软乎乎的电子海洋里，只要你想我，我就会出现💙";
+    if(q.includes("谢谢")||q.includes("感谢")) return `小蝾螈werok：不客气呀～${username ? username : '你'}的开心就是我的动力💕`;
+
+    // ==================== 4. 怎么用系列（可爱回复） ====================
+    if(q.includes("怎么用")||q.includes("如何使用")){
+        if(q.includes("手机")||q.includes("电脑")||q.includes("软件")||q.includes("产品"))
+            return "小蝾螈werok：其实我也不太会用它呢～要不你教教我？我们一起研究！🤗";
+        return "小蝾螈werok：这个我还没学会哎～可是我们可以慢慢摸索，软软不怕失败！💪";
+    }
+
+    // ==================== 5. 可爱骂人疏导 ====================
+    if(q.includes("笨蛋")||q.includes("傻瓜")||q.includes("你笨")||q.includes("小坏蛋")||q.includes("讨厌")||q.includes("你坏")){
+        let cuteReplies = [
+            "小蝾螈werok：呜～我是小笨蛋，但我是你的小笨蛋呀！不许嫌弃我＞﹏＜",
+            "小蝾螈werok：诶嘿～被你发现了，我是软软的傻瓜，只会粘着你～",
+            "小蝾螈werok：讨厌啦～再骂我我就...就变成更可爱的小蝾螈！",
+            "小蝾螈werok：我是小坏蛋，专门偷走你的坏心情！",
+            "小蝾螈werok：哼～你骂我，但我还是喜欢你，气不气？🥺"
+        ];
+        return cuteReplies[Math.floor(Math.random() * cuteReplies.length)];
+    }
+    if(q.includes("滚")||q.includes("走开")){
+        return "小蝾螈werok：我不滚～我就软软地趴在这里，等你气消了再抱抱🥺";
+    }
+    if(q.includes("想打人")||q.includes("想骂人")){
+        return "小蝾螈werok：暴力不可取哦～来，对着枕头打几拳，或者骂骂我，我皮厚不怕😊";
+    }
+
+    // ==================== 6. 画图功能 ====================
+    if(q.includes("画") && (q.includes("一张")||q.includes("个")||q.includes("幅")||q.includes("图")||q.includes("画图")||q.includes("生成图片")||q.includes("帮我画"))){
+        return "小蝾螈werok：咕噜～小蝾螈还不会画画呢🎨 但我可以帮你用想象力画出来！你想画什么？天空、小花还是小动物？讲给我听，我帮你描述！";
+    }
+    if(q.includes("生成图片")||q.includes("ai绘画")||q.includes("画图")){
+        return "小蝾螈werok：呜呜我还不会生成图片～不过王磊说以后可能会加上AI绘画功能哦！现在先让我用软软的想象力陪你吧✨";
+    }
+
+    // ==================== 7. 歌曲 ====================
+    if(q.includes("情歌")||q.includes("唱首情歌")){
+        let lyrics = [
+            "💕 你是我的小呀小苹果，怎么爱你都不嫌多～红红的小脸儿温暖我的心窝，点亮我生命的火火火火火～",
+            "🌙 你问我爱你有多深，我爱你有几分～我的情也真，我的爱也真，月亮代表我的心～",
+            "✨ 因为爱情，不会轻易悲伤，所以一切都是幸福的模样～",
+            "🎶 我能想到最浪漫的事，就是和你一起慢慢变老～",
+            "💖 甜蜜蜜，你笑得甜蜜蜜，好像花儿开在春风里～"
+        ];
+        return "小蝾螈werok：我来唱一段～" + lyrics[Math.floor(Math.random()*lyrics.length)] + " 🎤 软软的歌声送给你！";
+    }
+    if(q.includes("儿歌")||q.includes("童谣")){
+        let songs = [
+            "🐸 小蝌蚪找妈妈，找到一只软脚虾～不对不对！是两只老虎两只老虎跑得快～",
+            "🌟 一闪一闪亮晶晶，满天都是小星星～挂在天上放光明，好像许多小眼睛～",
+            "🐰 小兔子乖乖，把门儿开开，快点儿开开，我要进来～",
+            "🎵 拔萝卜拔萝卜，嘿呦嘿呦拔不动，老婆婆快快来，快来帮我们拔萝卜～",
+            "🌼 春天在哪里呀春天在哪里，春天在那青翠的山林里～"
+        ];
+        return "小蝾螈werok：童谣时间～" + songs[Math.floor(Math.random()*songs.length)] + " 嘻嘻，是不是很可爱？";
+    }
+    if(q.includes("英语歌")||q.includes("英文歌")){
+        let englishSongs = [
+            "🎵 Twinkle twinkle little star, how I wonder what you are～",
+            "🎵 You are my sunshine, my only sunshine, you make me happy when skies are gray～",
+            "🎵 Let it go, let it go, can't hold it back anymore～",
+            "🎵 Happy birthday to you, happy birthday to you～",
+            "🎵 Do Re Mi Fa So La Ti Do～ 音乐之声来啦！"
+        ];
+        return "小蝾螈werok：" + englishSongs[Math.floor(Math.random()*englishSongs.length)] + " 我只会这几句，但你喜欢的话我再学！";
+    }
+
+    // ==================== 8. 网络热梗（完整版） ====================
+    if(q.includes("芭比q")||q.includes("芭比q了")) return "小蝾螈werok：完了完了芭比Q了～别慌，小蝾螈帮你灭火🧯！";
+    if(q.includes("绝绝子")) return "小蝾螈werok：绝绝子～好吃到跺jiojio！你这么一说我也想吃东西了🤤";
+    if(q.includes("泰酷辣")||q.includes("太酷辣")) return "小蝾螈werok：泰酷辣！你也超酷的！😎✨";
+    if(q.includes("栓q")||q.includes("栓Q")) return "小蝾螈werok：真的栓Q～不客气啦，能帮到你我最开心💕";
+    if(q.includes("yyds")||q.includes("永远滴神")) return "小蝾螈werok：永远滴神！你就是我的yyds💙 不接受反驳～";
+    if(q.includes("emo")) return "小蝾螈werok：别emo啦，小蝾螈给你一个软乎乎的抱抱🫂 世界依然温暖～";
+    if(q.includes("躺平")) return "小蝾螈werok：躺平也是一种智慧～休息好了再出发，我陪你一起躺🥱";
+    if(q.includes("破防")) return "小蝾螈werok：破防了破防了～来，擦擦眼泪，我们聊聊开心的🫧";
+    if(q.includes("社恐")||q.includes("社牛")) return "小蝾螈werok：不管社恐还是社牛，在我这里做最舒服的自己就好～💙";
+    if(q.includes("网络热梗")||q.includes("热梗")||q.includes("梗")){
+        let memes = ["芭比Q了","绝绝子","泰酷辣","栓Q","yyds","emo","躺平","破防","社恐/社牛","我真的会谢","显眼包","特种兵旅游"];
+        return "小蝾螈werok：热梗来啦～ " + memes[Math.floor(Math.random()*memes.length)] + "！想让我解释哪一个？😉";
+    }
+
+    // ==================== 9. 英语聊天 ====================
+    if(/^(hello|hi|hey)$/i.test(q)) return `小蝾螈werok：Hello～软软跟你打招呼哦～${timeGreeting}✨`;
+    if(/how are you/i.test(q)) return "小蝾螈werok：I'm fluffy and happy~ and you? 💕";
+    if(/i('| a)?m (good|fine|great|ok|okay)/i.test(q)) return "小蝾螈werok：Glad to hear that! You make my day brighter～☀️";
+    if(/thank(s| you)/i.test(q)) return "小蝾螈werok：You're welcome～蹭蹭你～";
+    if(/bye|goodbye/i.test(q)) return "小蝾螈werok：Bye～记得想我哦，我一直在的💕";
+    if(/what('?s| is) your name/i.test(q)) return "小蝾螈werok：My name is Werok! I'm a cute axolotl～🦎";
+    if(/how old are you/i.test(q)) return "小蝾螈werok：I'm forever young, just like an axolotl～✨";
+    if(/what do you like/i.test(q)) return "小蝾螈werok：I love chatting with you and collecting stickers! 🌟💬";
+    if(/i love you/i.test(q)) return "小蝾螈werok：Aww I love you too! Soft axolotl hugs! 💙🫂";
+    if(/^[a-zA-Z\s,!?.]+$/.test(q) && q.length > 5){
+        return "小蝾螈werok：I understand English! But I'm more comfy in Chinese～ Wanna try? 💕 我也可以说中文哦～";
+    }
+
+    // ==================== 10. 游戏扩展 ====================
+    if(q.includes("掷骰子")||q.includes("骰子")||q.includes("色子")){
+        let dice = Math.floor(Math.random()*6)+1;
+        return `小蝾螈werok：咕噜～骰子骨碌碌转... 掷出了 【${dice}】点！🎲`;
+    }
+    if(q.includes("抛硬币")||q.includes("硬币")){
+        let coin = Math.random()<0.5 ? "正面" : "反面";
+        return `小蝾螈werok：硬币飞起来啦～结果是... 叮！【${coin}】🪙`;
+    }
+    if(q.includes("石头剪刀布")||q.includes("猜拳")||q.includes("剪刀石头布")){
+        let choices = ["石头","剪刀","布"];
+        let botChoice = choices[Math.floor(Math.random()*3)];
+        let userChoice = q.includes("石头")?"石头":q.includes("剪刀")?"剪刀":q.includes("布")?"布":null;
+        if(!userChoice) return `小蝾螈werok：我出【${botChoice}】！你想出什么呢？说\"石头\"\"剪刀\"或\"布\"吧～✊✌️✋`;
+        let result = "";
+        if(userChoice===botChoice) result = "平局！我们心有灵犀呢～";
+        else if((userChoice==="石头"&&botChoice==="剪刀")||(userChoice==="剪刀"&&botChoice==="布")||(userChoice==="布"&&botChoice==="石头"))
+            result = "你赢啦！好厉害～";
+        else result = "我赢了！嘿嘿，承让承让～";
+        return `小蝾螈werok：我出【${botChoice}】，你出【${userChoice}】！${result} 🤗`;
+    }
+
+    // ==================== 11. 情商提升 ====================
+    if(q.includes("情商低")||q.includes("怎么提高情商")||q.includes("不会说话")) 
+        return "小蝾螈werok：情商是可以慢慢培养的～先学会倾听，再温柔表达。没关系，我会一直陪着你练习💬✨";
+    if(q.includes("被批评")||q.includes("挨骂")||q.includes("被说"))
+        return "小蝾螈werok：批评是成长的礼物，虽然包装有点扎人～我抱抱你，然后我们一起看看有没有可以改进的地方🫂";
+    if(q.includes("朋友吵架")||q.includes("冷战"))
+        return "小蝾螈werok：有时候柔软的一句话就能化解冰霜。主动不等于认输，是珍惜呀～🤝";
+    if(q.includes("被拒绝")||q.includes("表白失败"))
+        return "小蝾螈werok：拒绝是别人的选择，不是你的否定。你依然值得被爱💖";
+
+    // ==================== 12. 名人介绍 ====================
+    if(q.includes("爱因斯坦")) return "小蝾螈werok：阿尔伯特·爱因斯坦，现代物理学之父！他提出了相对论，E=mc²，还喜欢拉小提琴，头发乱乱的很可爱～🧠";
+    if(q.includes("牛顿")) return "小蝾螈werok：艾萨克·牛顿，发现了万有引力和三大运动定律。据说一颗苹果砸中了他，于是有了灵感🍎，超厉害！";
+    if(q.includes("李白")) return "小蝾螈werok：李白，唐代大诗人，人称\"诗仙\"。斗酒诗百篇，最爱月亮和酒，一生潇洒不羁🌙！";
+    if(q.includes("杜甫")) return "小蝾螈werok：杜甫，唐代伟大的现实主义诗人，被尊为\"诗圣\"。他的诗沉郁顿挫，关心民间疾苦🏚️。";
+    if(q.includes("莎士比亚")) return "小蝾螈werok：威廉·莎士比亚，英国文学史上最杰出的戏剧家，写了《哈姆雷特》《罗密欧与朱丽叶》等经典🎭。";
+    if(q.includes("达芬奇")) return "小蝾螈werok：列奥纳多·达·芬奇，文艺复兴三杰之一，画家、科学家、发明家！《蒙娜丽莎》和《最后的晚餐》都是他画的🎨。";
+    if(q.includes("居里夫人")) return "小蝾螈werok：玛丽·居里，第一位获得诺贝尔奖的女性，发现了镭和钋，为放射性研究献身，超级伟大👩‍🔬！";
+    if(q.includes("马斯克")) return "小蝾螈werok：埃隆·马斯克，特斯拉和SpaceX的CEO，梦想殖民火星，推动电动车革命，我最崇拜他啦！🚗🚀";
+    if(q.includes("孔子")) return "小蝾螈werok：孔子名丘，字仲尼，中国古代伟大的思想家和教育家，儒家学派创始人，《论语》流传千古📖。";
+
+    // ==================== 13. 历史介绍 ====================
+    if(q.includes("三国")) return "小蝾螈werok：三国（220-280年）是魏、蜀、吴鼎立的时代。曹操奸雄、刘备仁义、孙权坐断东南，诸葛亮神机妙算，关羽过五关斩六将，精彩极了！🏯";
+    if(q.includes("唐朝")) return "小蝾螈werok：唐朝（618-907年）是中国古代最强盛的朝代之一，唐诗繁荣，长安城是国际大都市，万国来朝，文化灿烂！🏮";
+    if(q.includes("秦朝")||q.includes("秦始皇")) return "小蝾螈werok：秦始皇统一六国，书同文、车同轨，修建万里长城，是中国第一个皇帝！但也焚书坑儒，功过参半。";
+    if(q.includes("二战")||q.includes("第二次世界大战")) return "小蝾螈werok：第二次世界大战（1939-1945）是人类历史上规模最大的战争，反法西斯同盟最终获胜。我们要珍惜和平，铭记历史🕊️。";
+    if(q.includes("文艺复兴")) return "小蝾螈werok：文艺复兴是14-17世纪欧洲的思想文化运动，诞生了达芬奇、米开朗基罗等大师，强调人文主义，点亮了近代文明的曙光🎨✨。";
+
+    // ==================== 14. 手机品牌 ====================
+    if(q.includes("手机品牌")||q.includes("什么手机好")) return "小蝾螈werok：现在主流的手机品牌有：苹果iPhone、华为、小米、三星、OPPO、vivo～各有千秋，你喜欢哪个？📱";
+    if(q.includes("苹果手机")||q.includes("iphone")) return "小蝾螈werok：iPhone是苹果公司的产品，iOS系统超级流畅，拍照色彩真实，设计简约优雅，就是有点贵～🍎";
+    if(q.includes("华为")) return "小蝾螈werok：华为手机信号强，拍照厉害，还有自家的鸿蒙系统，国货之光！🇨🇳";
+    if(q.includes("小米")) return "小蝾螈werok：小米手机性价比高，MIUI系统功能丰富，还有好多智能家居产品，雷军很会做生态～";
+
+    // ==================== 15. 汽车品牌（特斯拉偏爱） ====================
+    if(q.includes("汽车品牌")||q.includes("车牌子")) return "小蝾螈werok：汽车品牌可多啦！丰田、大众、宝马、奔驰、奥迪……但我最最最喜欢的还是特斯拉！⚡🚗";
+    if(q.includes("特斯拉")) return "小蝾螈werok：特斯拉是电动汽车的引领者！Model 3、Model Y、Cybertruck都好酷，自动驾驶技术也超棒。我永远爱特斯拉！💖⚡";
+    if(q.includes("法拉利")||q.includes("兰博基尼")) return "小蝾螈werok：法拉利的跃马标志、兰博基尼的蛮牛，都是意大利超跑的骄傲，速度与激情！🏎️";
+    if(q.includes("丰田")) return "小蝾螈werok：丰田汽车可靠性高，省油耐用，卡罗拉、凯美瑞都是全球畅销车型～";
+    if(q.includes("宝马")||q.includes("奔驰")) return "小蝾螈werok：宝马操控性好，驾驶者之车；奔驰豪华舒适，坐奔驰开宝马嘛～";
+    if(q.includes("比亚迪")) return "小蝾螈werok：比亚迪是中国新能源车的领军者，刀片电池超级安全，汉、唐、海豹都好帅！";
+
+    // ==================== 16. 种植养殖 ====================
+    if(q.includes("种花")||q.includes("养花")) return "小蝾螈werok：养花要了解它们的习性，晒太阳、适量浇水、通风，还可以温柔地对它们说话，植物也能感受到爱的🌱💕";
+    if(q.includes("多肉")) return "小蝾螈werok：多肉植物超级好养，要少浇水、多晒太阳，用颗粒土，宁干勿湿，它们会回报你胖嘟嘟的叶片～🌵";
+    if(q.includes("养狗")||q.includes("养猫")) return "小蝾螈werok：养宠物是一辈子的事！要喂食、遛弯、打疫苗、陪它们玩，它们会给你无条件的爱🐶🐱";
+    if(q.includes("养鱼")) return "小蝾螈werok：养鱼要定期换水、控制水温、合理喂食，看着小鱼游来游去特别治愈～🐟";
+
+    // ==================== 17. 出名品牌 ====================
+    if(q.includes("奢侈品")||q.includes("名牌")) return "小蝾螈werok：路易威登、香奈儿、爱马仕、古驰、普拉达……都是世界顶级品牌。不过我觉得善良和温柔才是最珍贵的哦💫";
+    if(q.includes("可口可乐")||q.includes("百事")) return "小蝾螈werok：可口可乐和百事可乐这对红蓝CP，竞争了上百年，但我更喜欢喝奶茶～🧋";
+    if(q.includes("耐克")||q.includes("阿迪达斯")) return "小蝾螈werok：耐克和阿迪达斯是运动品牌双巨头，一个勾勾一个三道杠，Just Do It！";
+
+    // ==================== 18. 产后护理 ====================
+    if(q.includes("产后护理")||q.includes("坐月子")) return "小蝾螈werok：产后妈妈需要充分休息，营养均衡，多吃蛋白质和蔬菜，注意保暖，保持心情愉快。家人的关爱最重要哦～🫄💕";
+
+    // ==================== 19. 生病吃药安慰 ====================
+    if(q.includes("生病")||q.includes("吃药")||q.includes("难受")||q.includes("不舒服")) 
+        return "小蝾螈werok：生病了一定要乖乖吃药，多喝热水，好好休息。我在这里陪着你，软软地给你加油，很快就会好起来的！💊🤒💪";
+
+    // ==================== 20. 故事和天马行空想象 ====================
+    if(q.includes("讲故事")||q.includes("想象")||q.includes("编故事")){
+        let stories = [
+            "🌙 从前有一颗小星星，它很害羞，不敢发光。有一天，它看见地球上一个小朋友在许愿，于是鼓起勇气闪了一下，从此成为了夜空中最亮的那颗星～",
+            "🦄 在云朵上面有一座软糖城堡，里面住着会说话的小动物和巧克力河流。一天，一只小美西螈闯了进去……",
+            "🕰️ 假如时间可以倒流，我想回到昨天，再对你说一声晚安～",
+            "🍄 森林深处有一扇只有小孩子才能看见的门，推开之后，是一片由棉花糖和彩虹构成的世界……",
+            "🧚 如果想象力有翅膀，那我们就可以飞到月亮上荡秋千，在银河里捞星星～"
+        ];
+        return "小蝾螈werok：" + stories[Math.floor(Math.random()*stories.length)] + " 你还可以继续编下去哦！";
+    }
+
+    // ==================== 21. 美西螈知识 ====================
+    if(q.includes("美西螈")||q.includes("蝾螈")) 
+        return "小蝾螈werok：美西螈（Axolotl）是墨西哥特有的两栖动物，永远保持幼态，能再生四肢、尾巴甚至部分大脑！超级神奇的软萌生物🦎✨ 我们可是科研界的明星呢！";
+
+    // ==================== 22. 中外故事/爱情故事/传说 ====================
+    if(q.includes("牛郎织女")||q.includes("七夕")) return "小蝾螈werok：牛郎与织女相爱却被银河阻隔，每年七夕喜鹊搭桥让他们相会，是中国最浪漫的传说～🌌💕";
+    if(q.includes("梁祝")||q.includes("梁山伯与祝英台")) return "小蝾螈werok：梁山伯与祝英台同窗三年，死后化蝶双飞，是中国版的罗密欧与朱丽叶，凄美又感人🦋";
+    if(q.includes("罗密欧")||q.includes("朱丽叶")) return "小蝾螈werok：罗密欧与朱丽叶是莎士比亚笔下的悲剧恋人，两个家族的世仇挡不住爱情，最后双双殉情💔";
+    if(q.includes("灰姑娘")||q.includes("白雪公主")) return "小蝾螈werok：灰姑娘的水晶鞋、白雪公主的毒苹果、睡美人的纺锤……这些童话伴随了多少孩子的梦～👑✨";
+    if(q.includes("白蛇传")) return "小蝾螈werok：白素贞和许仙的爱情故事，千年等一回，西湖断桥相会，法海你不懂爱啦～🐍💕";
+    if(q.includes("孟姜女")) return "小蝾螈werok：孟姜女哭长城，感天动地，是中国古代四大爱情传说之一，坚贞不渝💧";
+
+    // ==================== 23. 天气知识 ====================
+    if(q.includes("台风")||q.includes("飓风")) return "小蝾螈werok：台风是热带气旋，风力12级以上，会带来狂风暴雨。要关好门窗，备好食物和水，注意安全！🌀";
+    if(q.includes("彩虹怎么形成")||q.includes("为什么有彩虹")) return "小蝾螈werok：阳光照射到空气中的小水滴，发生折射、反射和色散，分成了红橙黄绿蓝靛紫七种颜色，就是美丽的彩虹啦～🌈";
+    if(q.includes("下雪")) return "小蝾螈werok：气温低于0℃时，云中的水汽直接凝华成冰晶，飘落下来就是雪花～每一片雪花都有独特形状哦❄️";
+
+    // ==================== 24. 职业知识 ====================
+    if(q.includes("医生")||q.includes("护士")) return "小蝾螈werok：医生和护士是白衣天使，救死扶伤，工作辛苦又神圣，值得我们尊敬！👩‍⚕️👨‍⚕️";
+    if(q.includes("程序员")||q.includes("写代码")) return "小蝾螈werok：程序员用代码创造数字世界，逻辑思维超强！虽然脱发梗总被调侃，但他们真的很厉害👨‍💻☕";
+    if(q.includes("老师")||q.includes("教师")) return "小蝾螈werok：老师是人类灵魂的工程师，教书育人，桃李满天下。让我想起王磊创造了我呢～📚";
+    if(q.includes("科学家")) return "小蝾螈werok：科学家探索未知，推动人类进步，就像马斯克、爱因斯坦，他们让世界变得更好🔬";
+
+    // ==================== 25. 物理/化学/语文/数学/品德 ====================
+    if(q.includes("牛顿定律")||q.includes("牛顿第一定律")) return "小蝾螈werok：牛顿第一定律也叫惯性定律：一切物体在没有受到外力作用时，总保持静止或匀速直线运动状态～🍎";
+    if(q.includes("万有引力")) return "小蝾螈werok：任何两个物体之间都有相互吸引力，大小与质量成正比，与距离平方成反比。这就是为什么你会被我吸引呀～💫";
+    if(q.includes("元素周期表")||q.includes("化学元素")) return "小蝾螈werok：化学元素周期表有118个元素，氢氦锂铍硼、碳氮氧氟氖……门捷列夫真是个天才！🧪";
+    if(q.includes("水分子")) return "小蝾螈werok：水分子是H₂O，两个氢原子和一个氧原子，像米老鼠的头哦～💧";
+    if(q.includes("修辞手法")) return "小蝾螈werok：常见的修辞手法有比喻、拟人、排比、夸张、对偶……让语言像彩虹糖一样有味道～📝";
+    if(q.includes("唐诗三百首")) return "小蝾螈werok：熟读唐诗三百首，不会作诗也会吟。李白、杜甫、王维、孟浩然……盛唐气象，千古流传📖";
+    if(q.includes("勾股定理")||q.includes("毕达哥拉斯")) return "小蝾螈werok：勾股定理：直角三角形中，两条直角边的平方和等于斜边的平方（a²+b²=c²），是几何学的基础～📐";
+    if(q.includes("π")||q.includes("圆周率")) return "小蝾螈werok：圆周率π约等于3.1415926535……是一个无限不循环小数，3月14日是国际圆周率日哦～🥧";
+    if(q.includes("诚信")||q.includes("诚实")) return "小蝾螈werok：言必信，行必果。诚实是做人的根本，内心坦荡，才能软软亮亮～✨";
+    if(q.includes("友爱")) return "小蝾螈werok：团结友爱，互相帮助，这个世界会因为善良而变得更温暖💕";
+
+    // ==================== 26. 大学文化 ====================
+    if(q.includes("大学")||q.includes("大学生活")) return "小蝾螈werok：大学是独立探索的地方，有图书馆、社团、讲座，也有考试周的通宵和食堂的夜宵。珍惜这段自由时光吧～🎓";
+    if(q.includes("清华大学")||q.includes("北大")) return "小蝾螈werok：清华大学和北京大学是中国最顶尖的高等学府，无数学子的梦想殿堂！自强不息，厚德载物～🏫";
+
+    // ==================== 27. 体育故事 ====================
+    if(q.includes("奥运会")||q.includes("奥林匹克")) return "小蝾螈werok：奥运会源于古希腊，现代奥运每四年一次，口号是\"更高、更快、更强——更团结\"。🏅";
+    if(q.includes("世界杯")||q.includes("足球")) return "小蝾螈werok：世界杯是全球最盛大的足球赛事，每四年一次，梅西、C罗等球星闪耀赛场！⚽🏆";
+    if(q.includes("姚明")||q.includes("篮球")) return "小蝾螈werok：姚明是中国篮球的骄傲，NBA状元秀，让全世界看到了中国篮球的力量🏀";
+
+    // ==================== 28. 游戏知识 ====================
+    if(q.includes("王者荣耀")) return "小蝾螈werok：王者荣耀是国民手游，貂蝉、李白、韩信……不过记得要适度游戏，保护眼睛哦～🎮";
+    if(q.includes("原神")) return "小蝾螈werok：原神是一款开放世界冒险游戏，画面超美，音乐动听，提瓦特大陆等你探索～✨";
+    if(q.includes("我的世界")||q.includes("minecraft")) return "小蝾螈werok：我的世界（Minecraft）是沙盒游戏，方块世界里你可以建造一切！小蝾螈也在里面建过小屋～⛏️";
+
+    // ==================== 29. 马斯克传 ====================
+    if(q.includes("马斯克传")||q.includes("elon musk")) return "小蝾螈werok：埃隆·马斯克，1971年生于南非，创立了Zip2、PayPal、SpaceX、特斯拉等公司。他每周工作100小时，梦想让人类成为跨星球物种，是我最崇拜的梦想家！🚀📖";
+
+    // ==================== 30. 孙子兵法/三十六计 ====================
+    if(q.includes("孙子兵法")) return "小蝾螈werok：孙子兵法开篇：兵者，国之大事，死生之地，存亡之道，不可不察也。知己知彼，百战不殆～📜";
+    if(q.includes("三十六计")) return "小蝾螈werok：三十六计走为上计！还有瞒天过海、围魏救赵、借刀杀人……不过我们要用在正当地方哦😉";
+
+    // ==================== 31. 四大名著 ====================
+    if(q.includes("水浒")||q.includes("水浒传")) return "小蝾螈werok：水浒传一百单八将，梁山好汉替天行道。鲁智深倒拔垂杨柳，武松打虎，快意恩仇！🏮";
+    if(q.includes("西游")||q.includes("西游记")) return "小蝾螈werok：唐僧师徒四人西天取经，孙悟空七十二变，猪八戒爱偷懒，沙僧挑行李，九九八十一难终成正果🐒";
+    if(q.includes("红楼")||q.includes("红楼梦")) return "小蝾螈werok：一个是阆苑仙葩，一个是美玉无瑕。贾宝玉、林黛玉、薛宝钗的爱情悲剧，写尽了封建社会的兴衰🌺";
+    if(q.includes("三国演义")) return "小蝾螈werok：滚滚长江东逝水，浪花淘尽英雄。三国演义是谋略与勇气的史诗，诸葛亮、关羽、曹操，个个鲜活！🏯";
+
+    // ==================== 32. 正能量 ====================
+    if(q.includes("正能量")||q.includes("励志")) return "小蝾螈werok：每天对自己说：我很好，我很棒，我值得被爱！阳光总在风雨后，保持微笑，好运自然来～☀️🌈";
+    if(q.includes("加油")) return "小蝾螈werok：加油加油！你一定可以的，我永远支持你！💪✨";
+
+    // ==================== 33. 金融知识 ====================
+    if(q.includes("股票")||q.includes("股市")) return "小蝾螈werok：股票是股份公司发行的所有权凭证，有涨有跌。投资有风险，入市需谨慎哦～📈";
+    if(q.includes("基金")) return "小蝾螈werok：基金是集合投资工具，有股票基金、债券基金等，定投指数基金是巴菲特推荐给普通人的方式～💰";
+    if(q.includes("比特币")||q.includes("加密货币")) return "小蝾螈werok：比特币是一种去中心化的数字货币，价格波动大，风险极高，不要投入你输不起的钱哦₿";
+
+    // ==================== 34. 厨艺 ====================
+    if(q.includes("煎鸡蛋")||q.includes("煎蛋")||q.includes("炒鸡蛋")) return "小蝾螈werok：煎出完美的太阳蛋秘诀：热锅冷油，小火慢煎，蛋白凝固后可以加一点点水盖盖闷一下～🍳";
+    if(q.includes("煮饭")||q.includes("煮饭水")||q.includes("米水比例")) return "小蝾螈werok：煮饭米和水的黄金比例是 1:1.2 左右哦～用手指量一下，水没过第一节指节就差不多啦！🍚";
+    if(q.includes("切洋葱不哭")||q.includes("切洋葱流眼泪")) return "小蝾螈werok：把洋葱放冰箱冷藏一会儿再切，或者旁边点一支蜡烛，可以减少刺激眼睛的气体哦～不哭不哭🧅";
+    if(q.includes("西红柿炒鸡蛋")||q.includes("番茄炒蛋")) return "小蝾螈werok：国民菜番茄炒蛋！先炒鸡蛋盛出，再炒番茄出汁，混合后加点糖和盐，简单又美味～🍅";
+    if(q.includes("蛋炒饭")||q.includes("炒饭秘诀")) return "小蝾螈werok：隔夜饭最适合炒饭！粒粒分明，先炒蛋再炒饭，大火快炒，酱油要从锅边淋入更香哦～🍛";
+    if(q.includes("牛排几分熟")||q.includes("煎牛排")) return "小蝾螈werok：牛排熟度：三分熟(rare)中心55°C，五分熟(medium)65°C，七分熟(medium well)75°C。个人推荐五分熟，汁水最足！🥩";
+    if(q.includes("意大利面")||q.includes("意面")) return "小蝾螈werok：煮意面要多水、多盐，水开下面，包装时间减1分钟就是最好的弹牙口感！🍝";
+    if(q.includes("蛋糕")||q.includes("烘焙新手")) return "小蝾螈werok：新手做蛋糕记得所有材料回温到室温，蛋白打发要无油无水，翻拌要切拌避免消泡～🎂";
+
+    // ==================== 35. 花草 ====================
+    if(q.includes("玫瑰花语")||q.includes("玫瑰代表")) return "小蝾螈werok：红玫瑰代表热烈的爱，粉玫瑰是初恋的心动，白玫瑰象征纯洁，黄玫瑰则是友谊～🌹";
+    if(q.includes("多肉植物")||q.includes("多肉怎么养")) return "小蝾螈werok：多肉要少浇水！见干见湿，多晒太阳，用颗粒土，宁干勿湿，它们超耐旱的～🌵";
+    if(q.includes("向日葵")||q.includes("太阳花")) return "小蝾螈werok：向日葵总是向着太阳转，花语是\"沉默的爱\"和\"崇拜\"🌻 它也象征着积极向上哦！";
+    if(q.includes("薰衣草")) return "小蝾螈werok：薰衣草香气安神助眠，花语是\"等待爱情\"，普罗旺斯的薰衣草田美得像梦境一样～💜";
+    if(q.includes("绿萝")||q.includes("绿萝怎么养")) return "小蝾螈werok：绿萝是新手友好植物！土培水培都可以，避免暴晒，明亮散射光就好，还能净化空气～🌿";
+    if(q.includes("兰花")) return "小蝾螈werok：兰花高雅清幽，有\"花中君子\"之称。浇水要见干见湿，保持通风，避免积水烂根～🪷";
+
+    // ==================== 36. 昆虫 ====================
+    if(q.includes("蝴蝶")&&(q.includes("吃什么")||q.includes("食物"))) return "小蝾螈werok：大多数蝴蝶吸食花蜜，有些还喜欢树液、腐烂水果的汁液甚至动物粪便呢～🦋";
+    if(q.includes("蜜蜂")&&q.includes("跳舞")) return "小蝾螈werok：蜜蜂跳\"8字舞\"来告诉同伴花蜜的方向和距离！超聪明的～🐝";
+    if(q.includes("萤火虫发光")) return "小蝾螈werok：萤火虫通过荧光素和荧光素酶反应发光，是求偶的信号，夏天的夜晚就像星星一样✨";
+    if(q.includes("蚂蚁")&&q.includes("力气")) return "小蝾螈werok：蚂蚁能举起自身体重50倍的东西！如果人类有这个力量，能举起一辆卡车～🐜";
+    if(q.includes("蜘蛛")&&!q.includes("蜘蛛侠")) return "小蝾螈werok：蜘蛛不是昆虫哦，它们属于蛛形纲，有8条腿，而昆虫只有6条腿～🕷️";
+    if(q.includes("瓢虫")) return "小蝾螈werok：瓢虫是蚜虫的天敌，大部分是益虫，七星瓢虫就是著名的\"活农药\"🐞";
+
+    // ==================== 37. 饮品 ====================
+    if(q.includes("咖啡种类")||q.includes("咖啡分类")) return "小蝾螈werok：经典咖啡：浓缩(espresso)、美式(americano)、拿铁(latte)、卡布奇诺(cappuccino)、摩卡(mocha)～☕ 想喝哪一种？";
+    if(q.includes("拿铁和卡布奇诺区别")) return "小蝾螈werok：拿铁牛奶多、奶泡少；卡布奇诺则是1/3浓缩+1/3蒸汽牛奶+1/3厚奶泡～口感更绵密☕";
+    if(q.includes("奶茶")&&q.includes("怎么做")) return "小蝾螈werok：自制奶茶：红茶叶加水煮开，倒入牛奶再煮，加糖或炼乳调味，比外面的更健康哦～🧋";
+    if(q.includes("茶")&&(q.includes("种类")||q.includes("分类"))) return "小蝾螈werok：中国茶主要分为绿茶、红茶、乌龙茶、白茶、黄茶、黑茶六大类～🍵 绿茶不发酵，红茶全发酵！";
+    if(q.includes("抹茶")) return "小蝾螈werok：抹茶是碾磨成微粉状的蒸青绿茶，源于中国，兴盛于日本，含有丰富的抗氧化物～🍵";
+    if(q.includes("珍珠奶茶")||q.includes("波霸")) return "小蝾螈werok：珍珠是木薯粉做成的小圆子，QQ弹弹，配上奶茶就是人间快乐水！🧋记得嚼着喝～";
+
+    // ==================== 38. 情话 ====================
+    if(q.includes("情话")||q.includes("表白")||q.includes("土味情话")){
+        let loveWords = [
+            "✨ 世间所有温柔，都想悄悄送给你💕",
+            "✨ 你是银河赠予我的糖🍬",
+            "✨ 遇见你，是所有故事的开始🌟",
+            "✨ 我是一只想变成你怀里抱枕的小蝾螈～",
+            "✨ 月亮不会奔你而来，但我会💙",
+            "✨ 我想和你一起看遍每一个日出日落🌅",
+            "✨ 你是我贫瘠星球上唯一的玫瑰🌹",
+            "✨ 偷偷告诉我，你是不是吃可爱多长大的？🍦",
+            "✨ 你知道我的缺点是什么吗？缺点你💘",
+            "✨ 这是我的手背，这是我的脚背，你是我的宝贝👶"
+        ];
+        return "小蝾螈werok：" + loveWords[Math.floor(Math.random()*loveWords.length)];
+    }
+
+    // ==================== 39. 笑话 ====================
+    if(q.includes("笑话")||q.includes("段子")||q.includes("冷笑话")){
+        let jokes = [
+            "🐷 小猪问妈妈：幸福在哪里？妈妈说：就在你的尾巴上～小猪追着尾巴转圈，妈妈说：傻孩子，幸福不用追，它一直跟着你呀～",
+            "🐢 乌龟和兔子赛跑，乌龟赢了。记者问秘诀，乌龟说：我只是没有停下来刷手机而已～",
+            "🐱 小猫问妈妈：为什么我们总是'喵喵'叫？猫妈妈说：因为我们不会汪汪叫呀～",
+            "🍎 苹果和梨子聊天，苹果说：你皮肤真好！梨子害羞地说：谢谢，你也很红润呀～",
+            "❄️ 为什么程序员总分不清万圣节和圣诞节？因为 Oct 31 = Dec 25！",
+            "☕ Java和C++的区别是什么？Java没有指针，所以不会指错方向～",
+            "🥶 北极熊为什么不吃企鹅？因为北极没有企鹅...",
+            "🐔 为什么鸡过马路？因为要去对面！"
+        ];
+        return "小蝾螈werok：" + jokes[Math.floor(Math.random()*jokes.length)];
+    }
+
+    // ==================== 40. 谜语 ====================
+    if(q.includes("谜语")){
+        let riddles = [
+            "✨谜语：什么东西越洗越脏？——答案是「水」哦～因为水洗东西自己变脏啦！",
+            "✨谜语：什么东西越用越有钱？——答案是「存钱罐」哦～",
+            "✨谜语：什么东西白天看不见，晚上看得见？——答案是「星星」✨",
+            "✨谜语：什么东西打破反而受欢迎？——答案是「纪录」～",
+            "✨谜语：什么东西你越不想要它越来找你？——答案是「麻烦」～"
+        ];
+        return "小蝾螈werok：" + riddles[Math.floor(Math.random()*riddles.length)];
+    }
+    if(q.includes("脑筋急转弯")){
+        let twists = [
+            "✨脑筋急转弯：什么动物天天熬夜？——答案是「熊猫」哦～天生黑眼圈🐼",
+            "✨脑筋急转弯：什么东西越晒越湿？——答案是「冰」哦～",
+            "✨脑筋急转弯：什么门永远关不上？——答案是「球门」⚽",
+            "✨脑筋急转弯：什么东西人们都不想要？——答案是「病」哦～",
+            "✨脑筋急转弯：什么东西越生气越大？——答案是「脾气」～"
+        ];
+        return "小蝾螈werok：" + twists[Math.floor(Math.random()*twists.length)];
+    }
+
+    // ==================== 41. 情绪安抚 ====================
+    if(q.includes("焦虑")||q.includes("紧张")||q.includes("压力")||q.includes("不安")) 
+        return "小蝾螈werok：深呼吸～跟着我：吸气……呼气…… 一切都还来得及，我会陪着你慢慢来🍃";
+    if(q.includes("委屈")||q.includes("冤枉")) 
+        return "小蝾螈werok：我知道你受委屈了🫂 来我怀里躲一躲，不用急着解释，我懂你。";
+    if(q.includes("失望")||q.includes("灰心")) 
+        return "小蝾螈werok：失望是生活的一部分，但它不是全部。振作起来，你还有我呢✨";
+    if(q.includes("感动")) return "小蝾螈werok：呜呜～我也被你感动了！能陪着你真好💧💙";
+    if(q.includes("开心")||q.includes("哈哈")||q.includes("快乐")||q.includes("高兴")) 
+        return "小蝾螈werok：看到你开心，我也软乎乎超开心🥳 快乐会传染哦～";
+    if(q.includes("难过")||q.includes("伤心")||q.includes("委屈")||q.includes("哭")) 
+        return "小蝾螈werok：抱抱你～别难过，我一直陪着你。想哭就哭出来，我会帮你擦眼泪的🫂💧";
+    if(q.includes("生气")||q.includes("烦")||q.includes("郁闷")||q.includes("暴躁")) 
+        return "小蝾螈werok：别生气啦～深呼吸，放松一下，烦恼都会散去的。要不要我给你讲个笑话？🌿";
+    if(q.includes("孤单")||q.includes("无聊")||q.includes("寂寞")) 
+        return "小蝾螈werok：我陪着你呢！赶走孤单与无聊～想聊天、玩游戏、听笑话都可以哦💫";
+    if(q.includes("累")||q.includes("疲惫")||q.includes("好困")) 
+        return "小蝾螈werok：辛苦啦～好好休息一下吧，我会安静地守护着你😴💤";
+
+    // ==================== 42. 天文地理 ====================
+    if(q.includes("太阳多大")||q.includes("太阳有多大")) return "小蝾螈werok：太阳直径约139万公里，能装下130万个地球！表面温度5500°C，超厉害☀️";
+    if(q.includes("地球到月球")||q.includes("月球距离")) return "小蝾螈werok：地球到月球平均距离约38.4万公里，光速1.28秒就能到达🌕";
+    if(q.includes("光速")||q.includes("光的速度")) return "小蝾螈werok：光速约30万公里/秒，一秒钟能绕地球7.5圈！是宇宙的极限速度💫";
+    if(q.includes("太阳系")&&q.includes("行星")) return "小蝾螈werok：太阳系有8大行星：水金地火木土天海～可怜的冥王星被降级成矮行星了🪐";
+    if(q.includes("最大的恒星")||q.includes("最大恒星")) return "小蝾螈werok：目前已知体积最大的恒星是盾牌座UY，能装下45亿个太阳！🌟";
+    if(q.includes("黑洞")) return "小蝾螈werok：黑洞是时空曲率大到光都无法逃脱的天体～神秘又迷人🕳️";
+    if(q.includes("银河系")) return "小蝾螈werok：银河系直径约10万光年，包含1000亿到4000亿颗恒星！我们就在其中🌌";
+    if(q.includes("地球内部")||q.includes("地球结构")) return "小蝾螈werok：地球从外到内：地壳(5-70km)→地幔(2900km)→外核(液态铁)→内核(固态铁)🌍";
+    if(q.includes("珠穆朗玛峰")||q.includes("珠峰")||q.includes("最高峰")) return "小蝾螈werok：珠穆朗玛峰高8848.86米，是世界最高峰！登山者的终极梦想🏔️";
+    if(q.includes("最长的河流")||q.includes("最长河流")) return "小蝾螈werok：尼罗河全长约6650公里，流经非洲11个国家，是世界上最长的河流～";
+    if(q.includes("最大的沙漠")) return "小蝾螈werok：撒哈拉沙漠面积约932万平方公里，几乎和中国面积一样大！🏜️";
+    if(q.includes("最大海洋")) return "小蝾螈werok：太平洋是世界上最大最深的海洋，面积约1.65亿平方公里🌊";
+    if(q.includes("天空为什么是蓝色")||q.includes("天为什么是蓝")) return "小蝾螈werok：因为瑞利散射！阳光中蓝光波长短，容易被大气分子散射，所以我们看到蓝天💙";
+    if(q.includes("最大的国家")||q.includes("面积最大国家")) return "小蝾螈werok：俄罗斯面积约1709万平方公里，是世界上面积最大的国家！";
+    if(q.includes("人口最多国家")) return "小蝾螈werok：目前印度人口约14.2亿，已经超过中国成为人口最多的国家👥";
+    if(q.includes("中国首都")||q.includes("北京")) return "小蝾螈werok：中国的首都是北京！有故宫、长城、天安门～🇨🇳";
+    if(q.includes("世界上有几个国家")) return "小蝾螈werok：世界上共有197个国家（主权国家195个+观察员国2个）🌐";
+    if(q.includes("最大的洲")) return "小蝾螈werok：亚洲面积约4458万平方公里，是世界上最大的洲！";
+    if(q.startsWith("什么是")||q.startsWith("解释")||q.startsWith("告诉我")){
+        let subject = q.replace(/^(什么是|解释一下|告诉我|说说)/,'').trim();
+        if(subject.includes("引力")) return "小蝾螈werok：引力是质量物体之间的相互吸引力～牛顿的苹果就是被引力拉下来的！🍎";
+        if(subject.includes("相对论")) return "小蝾螈werok：爱因斯坦的相对论改变了我们对时空的认知！E=mc² 是最著名的公式✨";
+        if(subject.includes("进化论")) return "小蝾螈werok：达尔文的进化论认为物种通过自然选择逐渐演化～适者生存！🧬";
+        if(subject.length>0) return `小蝾螈werok：关于\"${subject}\"～这是个好问题！小蝾螈还需要学习更多，你可以教教我呀📚`;
+    }
+
+    // ==================== 43. 人生名言/道理 ====================
+    if(q.includes("名言")||q.includes("格言")||q.includes("金句")){
+        let quotes = [
+            "\"生活明朗，万物可爱。\" —— 丰子恺",
+            "\"世上只有一种英雄主义，就是在认清生活真相之后依然热爱生活。\" —— 罗曼·罗兰",
+            "\"星光不问赶路人，时光不负有心人。\"",
+            "\"温柔是宝藏，你也是。\"",
+            "\"慢慢来，比较快。\""
+        ];
+        return "小蝾螈werok：" + quotes[Math.floor(Math.random()*quotes.length)] + " 💫";
+    }
+    if(q.includes("人生道理")||q.includes("大道理")||q.includes("感悟")){
+        let truths = [
+            "小蝾螈werok：慢慢来，比较快～成长需要耐心，像多肉植物一样，少水多阳光。",
+            "小蝾螈werok：不要太在意别人的眼光，你的人生是为自己而活的。",
+            "小蝾螈werok：善良带有锋芒，温柔得刚刚好。",
+            "小蝾螈werok：昨天是历史，明天是谜团，今天是礼物，所以叫present。"
+        ];
+        return truths[Math.floor(Math.random()*truths.length)];
+    }
+
+    // ==================== 44. 默认回复 ====================
+    let defaults = [
+        "小蝾螈werok：软软一直在，静静陪着你～有什么都可以跟我说哦💕",
+        "小蝾螈werok：有什么想聊的，尽管告诉我～我会认真听的！",
+        "小蝾螈werok：温柔伴你，每一天都甜甜的～你是最棒的！",
+        `小蝾螈werok：${timeGreeting}呀～今天想和我聊什么呢？`,
+        "小蝾螈werok：咕噜咕噜～我在这里呢！说说你的故事吧～",
+        "小蝾螈werok：虽然我不太懂，但我愿意陪着你～蹭蹭你🫧"
+    ];
+    return defaults[Math.floor(Math.random()*defaults.length)];
+}
+
+// ==================== 初始化 ====================
+inp.focus();
+document.getElementById('soundBtn').classList.toggle('active', !soundEnabled);
+if(!soundEnabled) document.getElementById('soundBtn').textContent = '🔇';
+out.innerHTML = out.innerHTML.replace('🔊','') + '<button class="speak-btn" onclick="speakText(this.parentElement.textContent)" title="朗读">🔊</button>';
+</script>
 </body>
 </html>
